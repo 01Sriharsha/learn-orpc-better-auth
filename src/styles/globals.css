@@ -1,0 +1,143 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* Custom variant for dark mode */
+@custom-variant dark (&:is(.dark *));
+
+/* Inline CSS variables for theming */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+
+  /* Radii (border-radius) */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+/* Main color variables tuned for blue/purple look */
+:root {
+  --radius: 0.625rem;
+
+  --background: oklch(0.98 0.01 259.5);
+  --foreground: oklch(0.14 0.03 264.7);
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.14 0.03 264.7);
+
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.14 0.03 264.7);
+
+  --primary: oklch(0.22 0.034 265.5); /* blue-600 */
+  --primary-foreground: oklch(0.98 0.005 257.8); /* white */
+
+  --secondary: oklch(0.91 0.02 265); /* pastel blue-violet */
+  --secondary-foreground: oklch(0.22 0.034 265.5); /* blue-600 */
+
+  --muted: oklch(0.95 0.007 265.4); /* very light blue/purple */
+  --muted-foreground: oklch(0.57 0.03 264.3);
+
+  --accent: oklch(0.95 0.007 265.4);
+  --accent-foreground: oklch(0.22 0.034 265.5);
+
+  --destructive: oklch(0.577 0.245 27.325); /* unchanged for error */
+  --border: oklch(0.92 0.007 265.3);
+  --input: oklch(0.92 0.007 265.3);
+  --ring: oklch(0.57 0.03 264.3);
+
+  /* Example chart colors: focus on blue/purple spectrum */
+  --chart-1: oklch(0.63 0.21 264.1); /* blue */
+  --chart-2: oklch(0.55 0.17 296.3); /* purple */
+  --chart-3: oklch(0.54 0.14 246); /* light blue */
+  --chart-4: oklch(0.78 0.19 265); /* pastel blue-violet */
+  --chart-5: oklch(0.64 0.22 303.8); /* violet */
+
+  /* Sidebar colors (blue/purple accent) */
+  --sidebar: oklch(0.98 0.005 257.8);
+  --sidebar-foreground: oklch(0.14 0.03 264.7);
+  --sidebar-primary: oklch(0.22 0.034 265.5);
+  --sidebar-primary-foreground: oklch(0.98 0.005 257.8);
+  --sidebar-accent: oklch(0.91 0.02 265);
+  --sidebar-accent-foreground: oklch(0.22 0.034 265.5);
+  --sidebar-border: oklch(0.92 0.007 265.3);
+  --sidebar-ring: oklch(0.57 0.03 264.3);
+}
+
+/* Dark mode variant – deep blue/violet background, higher contrast */
+.dark {
+  --background: oklch(0.14 0.03 264.7); /* dark violet-blue */
+  --foreground: oklch(0.98 0.005 257.8); /* white */
+
+  --card: oklch(0.22 0.04 265.5); /* blue-600 */
+  --card-foreground: oklch(0.98 0.005 257.8);
+
+  --popover: oklch(0.22 0.04 265.5);
+  --popover-foreground: oklch(0.98 0.005 257.8);
+
+  --primary: oklch(0.91 0.02 265); /* lighter blue-violet for dark */
+  --primary-foreground: oklch(0.22 0.04 265.5);
+
+  --secondary: oklch(0.39 0.03 256.8); /* cool violet */
+  --secondary-foreground: oklch(0.98 0.005 257.8);
+
+  --muted: oklch(0.39 0.03 256.8);
+  --muted-foreground: oklch(0.57 0.03 264.3);
+
+  --accent: oklch(0.39 0.03 256.8);
+  --accent-foreground: oklch(0.98 0.005 257.8);
+
+  --destructive: oklch(0.704 0.191 22.216); /* unchanged for error */
+  --border: oklch(0.98 0.005 257.8 / 10%);
+  --input: oklch(0.98 0.005 257.8 / 15%);
+  --ring: oklch(0.57 0.03 264.3);
+
+  --chart-1: oklch(0.39 0.21 264.3); /* deep blue */
+  --chart-2: oklch(0.56 0.14 296.3); /* purple */
+  --chart-3: oklch(0.46 0.14 246); /* muted blue */
+  --chart-4: oklch(0.71 0.19 265); /* pastel purple */
+  --chart-5: oklch(0.54 0.22 303.8); /* for deep violet */
+
+  --sidebar: oklch(0.22 0.04 265.5);
+  --sidebar-foreground: oklch(0.98 0.005 257.8);
+  --sidebar-primary: oklch(0.39 0.21 264.3);
+  --sidebar-primary-foreground: oklch(0.98 0.005 257.8);
+  --sidebar-accent: oklch(0.39 0.03 256.8);
+  --sidebar-accent-foreground: oklch(0.98 0.005 257.8);
+  --sidebar-border: oklch(0.98 0.005 257.8 / 10%);
+  --sidebar-ring: oklch(0.57 0.03 264.3);
+}
+
+/* Base layer - all elements inherit border/input/ring color */
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Gradient utility */
+.bg-gradient {
+  @apply bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700;
+}

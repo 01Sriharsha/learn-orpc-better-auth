@@ -1,0 +1,521 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                    String   @id
+  name                  String
+  image                 String?
+  firstName             String?
+  lastName              String?
+  companyName           String?
+  countryCode           String?
+  businessEmail         String?
+  businessEmailVerified Boolean? @default(false)
+  email                 String?  @unique
+  emailVerified         Boolean  @default(false)
+  phoneNumber           String?  @unique
+  phoneNumberVerified   Boolean? @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  role       String?
+  banned     Boolean?  @default(false)
+  banReason  String?
+  banExpires DateTime?
+
+  isOnboarded Boolean? @default(false)
+  isOAuth     Boolean? @default(false)
+
+  //relations
+  sessions Session[]
+  accounts Account[]
+  Otp      Otp[]
+  Vendor   Vendor?
+
+  @@index([email, businessEmail, phoneNumber, role, name])
+  @@map("user")
+}
+
+model Session {
+  id             String   @id
+  expiresAt      DateTime
+  token          String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  ipAddress      String?
+  userAgent      String?
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  impersonatedBy String?
+
+  @@unique([token])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
+
+  @@map("verification")
+}
+
+enum OTPType {
+  EMAIL
+  PHONE
+}
+
+model Otp {
+  id        String   @id @default(uuid())
+  userId    String
+  type      OTPType
+  code      String
+  verified  Boolean  @default(false)
+  attempts  Int      @default(0)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("otp")
+}
+
+model Vendor {
+  id              String   @id @default(uuid())
+  companyName     String
+  brandName       String   @unique
+  companyAddress  String
+  companyLogo     String
+  country         String
+  countryCode     String
+  city            String
+  pan             String?
+  gstin           String?
+  msme            String?
+  msmeAttachment  String?
+  panAttachment   String?
+  gstinAttachment String?
+  coiAttachment   String?
+  shareLinks      Json?
+  createdByAdmin  Boolean  @default(false)
+  priority        Int      @default(-1)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  isActive   Boolean @default(true)
+  isVerified Boolean @default(false)
+
+  //relations
+  userId String? @unique
+  user   User?   @relation(fields: [userId], references: [id])
+
+  products Product[]
+  Showcase Showcase[]
+
+  @@map("vendor")
+}
+
+enum ImageType {
+  BRAND
+  COMPANY
+  ISP_PROVIDER
+  WHATSAPP_BUSINESS_PLATFORM
+  OMNICHANNEL_BUSINESS_PLATFORM
+  SHARE_LINK
+  POPULAR_SEARCH
+  BANNER_1
+  BANNER_2
+  AD_1
+  AD_2
+  AD_3
+  BROADBAND_POSTER
+  IMAGE_SLIDER
+}
+
+model Images {
+  id         String    @id @default(uuid())
+  type       ImageType
+  name       String    @unique
+  image      String
+  link       String?   @default("")
+  isFormLink Boolean   @default(false)
+  priority   Int?      @default(-1)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@map("images")
+}
+
+enum SectionType {
+  AI_LIKE
+  BUSINESS_PLATFORM
+  SOFTWARE
+  NETWORK_HARDWARE
+  DATA_CENTER
+  CLOUD
+  SHOWCASE
+  EVENT_WEBINAR
+}
+
+model Section {
+  id        String      @id @default(uuid())
+  name      String
+  slug      String      @unique
+  type      SectionType
+  priority  Int         @default(-1)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  categories    Category[]
+  products      Product[]
+  showcases     Showcase[]
+  eventWebinars EventWebinar[]
+
+  @@index([name, slug])
+  @@map("section")
+}
+
+model Category {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String   @unique
+  description String?
+  imageUrl    String?
+  priority    Int      @default(-1)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  level    Int        @default(0) // 0 = root, 1 = subcategory, etc.
+  parentId String?
+  parent   Category?  @relation(name: "ParentCategory", fields: [parentId], references: [id], onDelete: Cascade)
+  children Category[] @relation("ParentCategory")
+
+  sectionId String?
+  section   Section? @relation(fields: [sectionId], references: [id])
+
+  products      Product[]
+  showcases     Showcase[]
+  eventWebinars EventWebinar[]
+
+  @@index([name, slug, sectionId, parentId, level])
+  @@map("category")
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String   @unique
+  brandName   String?
+  industry    String?
+  description String?
+  imageUrl    String?
+  link        String?
+  priority    Int      @default(-1)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  engagementBlock EngagementBlock?
+  options         ProductOptions?
+  pricing         Pricing?
+  hasPricing      Boolean          @default(false)
+
+  sectionId  String?
+  section    Section?  @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  showVendor Boolean @default(false)
+  vendorId   String?
+  vendor     Vendor? @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  // additional details
+  datacenterCloudDetails DatacenterCloudDetails?
+  softwareDetails        SoftwareDetails?
+  networkHardwareDetails NetworkHardwareDetails?
+
+  @@index([name, slug, vendorId, categoryId])
+  @@map("product")
+}
+
+model ProductOptions {
+  id             String  @id @default(uuid())
+  includeDetails Boolean @default(false)
+  solidDotColor  String?
+  rating         Float?  @default(0)
+  reviewCount    Int?    @default(0)
+  tagline1       String?
+  tagline2       String?
+
+  isClaimable Boolean @default(false)
+  claim       Json?
+
+  showStartupOffer Boolean @default(false)
+  startupOffer     Json?
+
+  showSpecialOffer Boolean @default(false)
+  specialOffer     Json?
+
+  showStartTrial Boolean @default(false)
+  startTrial     Json?
+
+  showBookDemo Boolean @default(false)
+  bookDemo     Json?
+
+  showQuote Boolean @default(false)
+  quote     Json?
+
+  showCallBack Boolean @default(false)
+  callBack     Json?
+
+  showChat Boolean @default(false)
+  chat     Json?
+
+  showDiscount Boolean @default(false)
+  discount     Json?
+
+  showWebinar Boolean @default(false)
+  webinar     Json?
+
+  productId String  @unique
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("product_options")
+}
+
+enum DatacenterCloudType {
+  DATA_CENTER
+  CLOUD
+}
+
+model DatacenterCloudDetails {
+  id                  String              @id @default(uuid())
+  type                DatacenterCloudType @default(DATA_CENTER)
+  isAiCertified       Boolean             @default(false)
+  isGreenCompatible   Boolean             @default(false)
+  aiCertifiedLink     String?
+  greenCompatibleLink String?
+  features            String[]
+  certifications      Json?
+  locations           Json?
+  services            Json?
+  expertise           Json?
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  productId String  @unique
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("datacenter_cloud_details")
+}
+
+model SoftwareDetails {
+  id       String  @id @default(uuid())
+  viewLink String?
+
+  softwarePlans SoftwarePlan[]
+
+  productId String  @unique
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("software_details")
+}
+
+model SoftwarePlan {
+  id       String   @id @default(uuid())
+  name     String
+  priority Int      @default(-1)
+  features String[]
+
+  pricing    Pricing?
+  hasPricing Boolean  @default(false)
+
+  softwareDetailsId String
+  softwareDetails   SoftwareDetails @relation(fields: [softwareDetailsId], references: [id], onDelete: Cascade)
+
+  @@index([name])
+  @@map("software_plan")
+}
+
+model NetworkHardwareDetails {
+  id       String   @id @default(uuid())
+  model    String
+  features String[]
+
+  productId String  @unique
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("network_hardware_details")
+}
+
+enum ShowcaseMediaType {
+  IMAGE
+  VIDEO
+  YOUTUBE
+}
+
+model Showcase {
+  id        String            @id @default(uuid())
+  name      String
+  slug      String            @unique
+  mediaType ShowcaseMediaType @default(IMAGE)
+  url       String
+  priority  Int               @default(-1)
+
+  engagementBlock EngagementBlock?
+
+  sectionId String?
+  section   Section? @relation(fields: [sectionId], references: [id])
+
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id])
+
+  vendorId String?
+  vendor   Vendor? @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@index([name, slug])
+  @@map("showcase")
+}
+
+enum EventWebinarType {
+  EVENT
+  WEBINAR
+}
+
+model EventWebinar {
+  id          String           @id @default(uuid())
+  type        EventWebinarType @default(EVENT)
+  name        String
+  slug        String           @unique
+  description String?
+  image       String?
+  link        String?
+  priority    Int              @default(-1)
+  date        DateTime
+  city        String?
+  address     String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @default(now()) @updatedAt
+
+  pricing         Pricing?
+  hasPricing      Boolean          @default(false)
+  engagementBlock EngagementBlock?
+
+  sectionId String?
+  section   Section? @relation(fields: [sectionId], references: [id])
+
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id])
+
+  @@index([name, slug])
+  @@map("event_webinar")
+}
+
+// Reusable
+
+enum EngagementEmbedType {
+  LINK
+  EMBEDDABLE
+  FILE
+}
+
+model EngagementBlock {
+  id String @id @default(uuid())
+
+  showInfo    Boolean @default(false)
+  infoDetails Json?
+
+  showBrochure    Boolean @default(false)
+  brochureDetails Json?
+
+  showForm    Boolean @default(false)
+  formDetails Json?
+
+  showTrendingBrands    Boolean @default(false)
+  trendingBrandsDetails Json?
+
+  showCalendar    Boolean @default(false)
+  calendarDetails Json?
+
+  showShareLinks Boolean @default(false)
+  shareLinks     Json?
+
+  showBadge    Boolean @default(false)
+  badgeDetails Json?
+
+  // relations
+  productId String?  @unique
+  product   Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  showcaseId String?   @unique
+  showcase   Showcase? @relation(fields: [showcaseId], references: [id], onDelete: Cascade)
+
+  eventWebinarId String?       @unique
+  eventWebinar   EventWebinar? @relation(fields: [eventWebinarId], references: [id], onDelete: Cascade)
+
+  @@map("engagement_block")
+}
+
+enum Currency {
+  INR
+  USD
+  EUR
+}
+
+model Pricing {
+  id              String   @id @default(uuid())
+  isStartingPrice Boolean  @default(false)
+  price           Float?
+  priceText       String?
+  currency        Currency @default(INR)
+
+  hasFreeDemo  Boolean @default(false)
+  freeDemoLink String?
+
+  showBtn   Boolean  @default(false)
+  btnText   String?  @default("Buy Now")
+  btnLink   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  //relations
+  productId String?  @unique
+  product   Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  softwarePlanId String?       @unique
+  softwarePlan   SoftwarePlan? @relation(fields: [softwarePlanId], references: [id], onDelete: Cascade)
+
+  eventWebinarId String?       @unique
+  eventWebinar   EventWebinar? @relation(fields: [eventWebinarId], references: [id], onDelete: Cascade)
+
+  @@map("price_block")
+}
