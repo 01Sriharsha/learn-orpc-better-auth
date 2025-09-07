@@ -1,5 +1,9 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client" // New generator
+  output          = "../generated/client"
+  moduleFormat    = "esm"
+  runtime         = "vercel-edge"
+  previewFeatures = ["driverAdapters", "queryCompiler"] // Rust-free
 }
 
 datasource db {

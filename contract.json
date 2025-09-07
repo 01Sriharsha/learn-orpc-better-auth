@@ -1,0 +1,99 @@
+{
+  "auth": {
+    "hello": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "tags": ["Authentication"],
+          "path": "/auth/hello",
+          "summary": "Hello Route"
+        }
+      }
+    },
+    "login": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "POST",
+          "tags": ["Authentication"],
+          "summary": "Login",
+          "path": "/auth/login"
+        }
+      }
+    },
+    "me": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "tags": ["Authentication"],
+          "path": "/auth/me",
+          "summary": "Get Current/Me User"
+        }
+      }
+    },
+    "onBoardOAuthUser": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "POST",
+          "tags": ["Authentication"],
+          "path": "/auth/onboard-oauth",
+          "summary": "Onboard OAuth User"
+        }
+      }
+    },
+    "onBoardUser": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "POST",
+          "tags": ["Authentication"],
+          "path": "/auth/onboard",
+          "summary": "Onboard User"
+        }
+      }
+    },
+    "verifyLoginPhoneOTP": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "POST",
+          "tags": ["Authentication"],
+          "summary": "Verify Login"
+        }
+      }
+    },
+    "verifyOnboardEmailOTP": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "POST",
+          "tags": ["Authentication"],
+          "path": "/auth/onboard-verify",
+          "summary": "Verify Email & Onboard"
+        }
+      }
+    },
+    "verifyOnboardPhoneOTP": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "POST",
+          "tags": ["Authentication"],
+          "path": "/auth/onboard-oauth-verify",
+          "summary": "Verify Phone & Onboard"
+        }
+      }
+    }
+  }
+}

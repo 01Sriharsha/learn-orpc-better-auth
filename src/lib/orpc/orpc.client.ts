@@ -1,21 +1,21 @@
 import { createORPCClient } from "@orpc/client";
 import { RPCLink } from "@orpc/client/fetch";
 import { SimpleCsrfProtectionLinkPlugin } from "@orpc/client/plugins";
-import { inferRPCMethodFromContractRouter } from "@orpc/contract";
 import type { RouterClient } from "@orpc/server";
 import { createTanstackQueryUtils } from "@orpc/tanstack-query";
+import { isServer } from "@tanstack/react-query";
 
-import { routes } from "@/server/routes";
+import { RPCRouter } from "@/server/router";
 
+type Client = RouterClient<RPCRouter>;
 interface ClientContext {
   cache?: RequestCache;
 }
 
 const link = new RPCLink<ClientContext>({
-  method: inferRPCMethodFromContractRouter(routes),
   plugins: [new SimpleCsrfProtectionLinkPlugin()],
   url: () => {
-    if (typeof window === "undefined") {
+    if (isServer) {
       throw new Error("RPCLink is not allowed on the server side.");
     }
 
@@ -28,7 +28,7 @@ const link = new RPCLink<ClientContext>({
     }),
 });
 
-export const orpcClient: RouterClient<typeof routes> = createORPCClient(link);
+export const orpcClient: Client = createORPCClient(link);
 
 // tanstack query utils
 export const orpcQC = createTanstackQueryUtils(orpcClient);

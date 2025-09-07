@@ -1,6 +1,7 @@
 import { ORPCError } from "@orpc/server";
 
 import { auth } from "@/lib/auth";
+import { db } from "@/lib/db";
 import {
   LoginSchema,
   OnBoardOAuthUserSchema,
@@ -8,45 +9,14 @@ import {
   VerifyEmailOTPSchema,
   VerifyPhoneOTPSchema,
 } from "@/schemas/auth";
-import { router } from "@/server/router";
-import { db } from "@/lib/db";
-import { User as DBUser } from "@prisma/client";
+
+import { base } from "@/server";
+import { requireAuth } from "@/server/middlewares/auth.middleware";
+import { getSession } from "@/server/utils";
 
 const tags = ["Authentication"];
 
-const getSession = async (headers: Headers) => {
-  const session = await auth.api.getSession({
-    headers,
-  });
-  if (!session)
-    throw new ORPCError("UNAUTHORIZED", { message: "Session Expired!" });
-  return session;
-};
-
-const displayUser = (user: Partial<DBUser>) => ({
-  id: user?.id || "",
-  name: user?.name || "",
-  email: user?.email || "",
-  image: user?.image || "",
-  phoneNumber: user?.phoneNumber || "",
-  businessEmail: user?.businessEmail || "",
-  role: user?.role || "",
-  isOnboarded: user?.isOnboarded || false,
-  isOAuth: user?.isOAuth || false,
-});
-
-export const hello = router
-  .route({
-    method: "GET",
-    tags,
-    path: "/auth/hello",
-    summary: "Hello Route",
-  })
-  .handler(async () => {
-    return { message: "Hello world", data: null };
-  });
-
-export const login = router
+export const login = base
   .route({ method: "POST", tags, summary: "Login", path: "/auth/login" })
   .input(LoginSchema)
   .handler(async ({ input, context }) => {
@@ -63,7 +33,7 @@ export const login = router
     return { message: data?.message || "OTP sent successfully" };
   });
 
-export const verifyLoginPhoneOTP = router
+export const verifyLoginPhoneOTP = base
   .route({
     method: "POST",
     tags,
@@ -105,7 +75,7 @@ export const verifyLoginPhoneOTP = router
     }
   });
 
-export const onBoardUser = router
+export const onBoardUser = base
   .route({
     method: "POST",
     tags,
@@ -167,7 +137,7 @@ export const onBoardUser = router
     }
   });
 
-export const verifyOnboardEmailOTP = router
+export const verifyOnboardEmailOTP = base
   .route({
     method: "POST",
     tags,
@@ -175,9 +145,10 @@ export const verifyOnboardEmailOTP = router
     summary: "Verify Email & Onboard",
   })
   .input(VerifyEmailOTPSchema)
+  .use(requireAuth())
   .handler(async ({ input, context }) => {
     try {
-      const session = await getSession(context.reqHeaders!);
+      const user = context.user!;
       const { status } = await auth.api.verifyEmailOTP({
         body: {
           email: input.businessEmail,
@@ -189,13 +160,13 @@ export const verifyOnboardEmailOTP = router
       if (!status)
         throw new ORPCError("NOT_ACCEPTABLE", { message: "Invalid OTP" });
 
-      const updatedUser = await db.user.update({
-        where: { id: session.user.id },
+      await db.user.update({
+        where: { id: user.id },
         data: { isOnboarded: true, businessEmailVerified: true },
       });
       return {
-        message: `Welcome ${session.user.name}`,
-        data: displayUser(updatedUser),
+        message: `Welcome ${user.name}`,
+        data: user,
       };
     } catch (error: any) {
       throw new ORPCError("INTERNAL_SERVER_ERROR", {
@@ -205,7 +176,7 @@ export const verifyOnboardEmailOTP = router
     }
   });
 
-export const onBoardOAuthUser = router
+export const onBoardOAuthUser = base
   .route({
     method: "POST",
     tags,
@@ -250,7 +221,7 @@ export const onBoardOAuthUser = router
     }
   });
 
-export const verifyOnboardPhoneOTP = router
+export const verifyOnboardPhoneOTP = base
   .route({
     method: "POST",
     tags,
@@ -258,9 +229,10 @@ export const verifyOnboardPhoneOTP = router
     summary: "Verify Phone & Onboard",
   })
   .input(VerifyPhoneOTPSchema)
+  .use(requireAuth())
   .handler(async ({ input, context }) => {
     try {
-      const session = await getSession(context.reqHeaders!);
+      const user = context.user!;
       const { status: success } = await auth.api.verifyPhoneNumber({
         body: {
           phoneNumber: input.phoneNumber,
@@ -274,13 +246,13 @@ export const verifyOnboardPhoneOTP = router
         throw new ORPCError("NOT_ACCEPTABLE", { message: "Invalid OTP" });
 
       const updatedUser = await db.user.update({
-        where: { id: session.user.id },
+        where: { id: user.id },
         data: { isOnboarded: true },
       });
 
       return {
         message: `Welcome ${updatedUser.name}`,
-        data: updatedUser ? displayUser(updatedUser) : undefined,
+        data: updatedUser ? user : undefined,
       };
     } catch (error: any) {
       throw new ORPCError("INTERNAL_SERVER_ERROR", {
@@ -290,19 +262,20 @@ export const verifyOnboardPhoneOTP = router
     }
   });
 
-export const me = router
+export const me = base
   .route({
     method: "GET",
     tags,
     path: "/auth/me",
     summary: "Get Current/Me User",
   })
+  .use(requireAuth())
   .handler(async ({ context }) => {
     try {
-      const session = await getSession(context.reqHeaders!);
+      const user = context.user!;
       return {
         message: "session fetched successfully",
-        data: displayUser(session.user),
+        data: user,
       };
     } catch (error: any) {
       throw new ORPCError("INTERNAL_SERVER_ERROR", {

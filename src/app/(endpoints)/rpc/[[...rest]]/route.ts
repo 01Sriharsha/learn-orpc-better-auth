@@ -1,11 +1,12 @@
-import { routes } from "@/server/routes";
 import { RPCHandler } from "@orpc/server/fetch";
 import {
   RequestHeadersPlugin,
   SimpleCsrfProtectionHandlerPlugin,
 } from "@orpc/server/plugins";
 
-const handler = new RPCHandler(routes, {
+import { router } from "@/server/router";
+
+const handler = new RPCHandler(router, {
   plugins: [
     // add plugins here if needed
     new SimpleCsrfProtectionHandlerPlugin(),
@@ -14,8 +15,6 @@ const handler = new RPCHandler(routes, {
 });
 
 async function handleRequest(request: Request) {
-  console.log("Incoming request:", request.method, request.url);
-  
   const { response } = await handler.handle(request, {
     prefix: "/rpc",
     context: { reqHeaders: request.headers },

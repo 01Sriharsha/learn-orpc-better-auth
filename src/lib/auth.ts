@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { APP_TITLE } from "@/utils/constants";
 import { APIError, betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
@@ -6,7 +7,7 @@ import {
   admin,
   customSession,
   emailOTP,
-  phoneNumber
+  phoneNumber,
 } from "better-auth/plugins";
 
 export const auth = betterAuth({
@@ -15,8 +16,10 @@ export const auth = betterAuth({
   }),
 
   // Base URL and app name
+  appName: APP_TITLE,
   baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
   secret: process.env.BETTER_AUTH_SECRET!,
+  logger: { level: process.env.NODE_ENV === "development" ? "debug" : "error" },
 
   // Disable email/password authentication
   emailAndPassword: {
@@ -66,7 +69,7 @@ export const auth = betterAuth({
     }),
 
     customSession(async ({ user, session }) => {
-      const dbUser = await db.user.findUnique({
+      const userWithSession = await db.user.findUnique({
         where: { id: user.id },
         select: {
           id: true,
@@ -78,6 +81,7 @@ export const auth = betterAuth({
           isOnboarded: true,
           isOAuth: true,
           banned: true,
+          businessEmail : true,
           businessEmailVerified: true,
           sessions: {
             select: { id: true, token: true },
@@ -86,14 +90,14 @@ export const auth = betterAuth({
           },
         },
       });
-      if (!dbUser) {
+      if (!userWithSession) {
         console.error(
           "Error in custom Session Plugin: User not found",
           user.id
         );
         throw new APIError("NOT_FOUND", { message: "User not found" });
       }
-      const { sessions, ...userData } = dbUser;
+      const { sessions, ...userData } = userWithSession;
       return {
         user: userData,
         session: sessions?.[0] || session,

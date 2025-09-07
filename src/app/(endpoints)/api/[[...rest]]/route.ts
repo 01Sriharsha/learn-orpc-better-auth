@@ -1,21 +1,25 @@
-import { routes } from "@/server/routes";
-import { OpenAPIHandler } from "@orpc/openapi/fetch";
-import { onError } from "@orpc/server";
 import { experimental_SmartCoercionPlugin as SmartCoercionPlugin } from "@orpc/json-schema";
-import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4";
+import { OpenAPIHandler } from "@orpc/openapi/fetch";
 import { OpenAPIReferencePlugin } from "@orpc/openapi/plugins";
+import { onError } from "@orpc/server";
 import {
   RequestHeadersPlugin,
   SimpleCsrfProtectionHandlerPlugin,
 } from "@orpc/server/plugins";
+import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4";
 
-const openAPIHandler = new OpenAPIHandler(routes, {
+import { router } from "@/server/router";
+
+const openAPIHandler = new OpenAPIHandler(router, {
   interceptors: [
     onError((error) => {
       console.error(error);
     }),
   ],
   plugins: [
+    new SimpleCsrfProtectionHandlerPlugin({
+      exclude: process.env.NODE_ENV === "development",
+    }),
     new RequestHeadersPlugin(),
     new SmartCoercionPlugin({
       schemaConverters: [new ZodToJsonSchemaConverter()],
@@ -52,7 +56,7 @@ const openAPIHandler = new OpenAPIHandler(routes, {
 
 async function handleRequest(request: Request) {
   const { response } = await openAPIHandler.handle(request, {
-    prefix: "/api/docs",
+    prefix: "/api",
     // Provide initial context if needed
     context: {
       reqHeaders: request.headers,

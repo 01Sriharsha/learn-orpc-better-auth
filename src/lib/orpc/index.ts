@@ -1,9 +1,8 @@
+import { router } from "@/server/router";
 import { RouterClient } from "@orpc/server";
 import { isServer } from "@tanstack/react-query";
 
-import { routes } from "@/server/routes";
-
-type Client = RouterClient<typeof routes>;
+type Client = RouterClient<typeof router>;
 
 declare global {
   var $client: Client | undefined;

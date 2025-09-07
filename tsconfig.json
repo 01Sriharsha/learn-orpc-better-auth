@@ -13,15 +13,24 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
+    "outDir": "dist-types",
     "plugins": [
       {
         "name": "next"
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@generated/*": ["./generated/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/providers/index.tsz"],
+  
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "src/providers/index.tsz",
+  ],
   "exclude": ["node_modules"]
 }
