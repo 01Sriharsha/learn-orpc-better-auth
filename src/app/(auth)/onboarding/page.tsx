@@ -1,4 +1,4 @@
-import { getMeServer } from "@/middleware";
+import { getMeServerSession } from "@/lib/auth-helper";
 
 import OAuthOnboardingForm from "./oauth-onboarding-form";
 import OnboardingForm, { AnimatedBG } from "./onboarding-form";
@@ -10,8 +10,7 @@ export const metadata = {
 };
 
 export default async function OnboardingPage() {
-  const user = await getMeServer();
-
+  const user = await getMeServerSession();
   if (!user) return null;
   return (
     <section className="min-h-screen overflow-hidden bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900 p-4 relative grid place-items-center">

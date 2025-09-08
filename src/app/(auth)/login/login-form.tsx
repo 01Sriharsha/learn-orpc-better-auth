@@ -379,7 +379,7 @@ const Footer = () => {
           variant="link"
           className="px-1 h-auto text-sm text-blue-600 hover:text-blue-700"
         >
-          <Link href="/terms">Terms of Service</Link>
+          <span>Terms of Service</span>
         </Button>{" "}
         and{" "}
         <Button
@@ -387,7 +387,7 @@ const Footer = () => {
           variant="link"
           className="px-1 h-auto text-sm text-blue-600 hover:text-blue-700"
         >
-          <Link href="/privacy">Privacy Policy</Link>
+          <span>Privacy Policy</span>
         </Button>
       </p>
     </motion.div>

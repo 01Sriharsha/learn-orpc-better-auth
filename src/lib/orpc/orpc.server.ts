@@ -1,6 +1,7 @@
 import "server-only";
 
 import { createRouterClient } from "@orpc/server";
+
 import { router } from "@/server/router";
 
 export const orpcServerClient = createRouterClient(router, {

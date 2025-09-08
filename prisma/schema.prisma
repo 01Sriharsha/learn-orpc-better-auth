@@ -249,7 +249,6 @@ model Product {
   updatedAt   DateTime @updatedAt
 
   engagementBlock EngagementBlock?
-  options         ProductOptions?
   pricing         Pricing?
   hasPricing      Boolean          @default(false)
 
@@ -263,6 +262,7 @@ model Product {
   vendor     Vendor? @relation(fields: [vendorId], references: [id], onDelete: Cascade)
 
   // additional details
+  aiProductDetails       AIProductDetails?
   datacenterCloudDetails DatacenterCloudDetails?
   softwareDetails        SoftwareDetails?
   networkHardwareDetails NetworkHardwareDetails?
@@ -271,7 +271,7 @@ model Product {
   @@map("product")
 }
 
-model ProductOptions {
+model AIProductDetails {
   id             String  @id @default(uuid())
   includeDetails Boolean @default(false)
   solidDotColor  String?

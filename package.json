@@ -15,6 +15,7 @@
     "db:prod:studio": "bunx dotenv-cli -e .env.production -- prisma studio"
   },
   "dependencies": {
+    "@arcjet/next": "^1.0.0-beta.11",
     "@hookform/resolvers": "^5.2.1",
     "@neondatabase/serverless": "^1.0.1",
     "@orpc/client": "^1.8.6",
@@ -70,6 +71,7 @@
     "react-day-picker": "^9.9.0",
     "react-dom": "19.1.0",
     "react-hook-form": "^7.62.0",
+    "react-phone-number-input": "^3.4.12",
     "react-resizable-panels": "^3.0.5",
     "react-use-measure": "^2.1.7",
     "recharts": "2.15.4",

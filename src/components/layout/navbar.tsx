@@ -79,7 +79,7 @@ export default function Navbar() {
           {/* Center: Navigation Links (Desktop) */}
           <nav className="hidden md:flex items-center space-x-8">
             <motion.div whileHover={{ y: -1 }}>
-              <Link 
+              <a 
                 href="/dashboard" 
                 className="text-foreground/80 hover:text-foreground font-medium transition-colors relative group"
               >
@@ -88,27 +88,27 @@ export default function Navbar() {
                   className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 group-hover:w-full transition-all duration-300"
                   layoutId="navbar-underline"
                 />
-              </Link>
+              </a>
             </motion.div>
             
             <motion.div whileHover={{ y: -1 }}>
-              <Link 
+              <a 
                 href="/products" 
                 className="text-foreground/80 hover:text-foreground font-medium transition-colors relative group"
               >
                 Products
                 <motion.div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 group-hover:w-full transition-all duration-300" />
-              </Link>
+              </a>
             </motion.div>
             
             <motion.div whileHover={{ y: -1 }}>
-              <Link 
+              <a 
                 href="/analytics" 
                 className="text-foreground/80 hover:text-foreground font-medium transition-colors relative group"
               >
                 Analytics
                 <motion.div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 group-hover:w-full transition-all duration-300" />
-              </Link>
+              </a>
             </motion.div>
           </nav>
 
@@ -224,39 +224,39 @@ export default function Navbar() {
                       whileHover={{ x: 5 }}
                       transition={{ duration: 0.2 }}
                     >
-                      <Link 
+                      <a 
                         href="/dashboard" 
                         className="block py-3 px-4 text-lg font-medium hover:bg-muted/50 rounded-lg transition-colors"
                         onClick={() => setMobileSheetOpen(false)}
                       >
                         Dashboard
-                      </Link>
+                      </a>
                     </motion.div>
                     
                     <motion.div
                       whileHover={{ x: 5 }}
                       transition={{ duration: 0.2 }}
                     >
-                      <Link 
+                      <a 
                         href="/products" 
                         className="block py-3 px-4 text-lg font-medium hover:bg-muted/50 rounded-lg transition-colors"
                         onClick={() => setMobileSheetOpen(false)}
                       >
                         Products
-                      </Link>
+                      </a>
                     </motion.div>
                     
                     <motion.div
                       whileHover={{ x: 5 }}
                       transition={{ duration: 0.2 }}
                     >
-                      <Link 
+                      <a 
                         href="/analytics" 
                         className="block py-3 px-4 text-lg font-medium hover:bg-muted/50 rounded-lg transition-colors"
                         onClick={() => setMobileSheetOpen(false)}
                       >
                         Analytics
-                      </Link>
+                      </a>
                     </motion.div>
                   </nav>
 

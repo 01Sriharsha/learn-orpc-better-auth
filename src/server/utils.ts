@@ -1,8 +1,9 @@
-import { User } from "@generated/client/client";
-
 import { ORPCError } from "@orpc/client";
 
+import { User } from "@generated/client/client";
+
 import { auth } from "@/lib/auth";
+import { Pagination } from "@/types";
 
 export const getSession = async (headers: Headers) => {
   const session = await auth.api.getSession({
@@ -24,3 +25,9 @@ export const displayUser = (user: Partial<User>) => ({
   isOnboarded: user?.isOnboarded || false,
   isOAuth: user?.isOAuth || false,
 });
+
+export const paginationResponse = <T extends Array<any>>(
+  options: Omit<Pagination<T>, "totalPages">
+): Pagination<T> => {
+  return { ...options, totalPages: Math.ceil(options.total / options.limit) };
+};

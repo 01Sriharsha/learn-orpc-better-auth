@@ -32,8 +32,7 @@ interface MenuItem {
 const SAMPLE_PROFILE_DATA: Profile = {
   name: "Eugene An",
   email: "eugene@kokonutui.com",
-  avatar:
-    "/logo/logo.png",
+  avatar: "/logo/logo.png",
   subscription: "PRO",
   model: "Gemini 2.0 Flash",
 };

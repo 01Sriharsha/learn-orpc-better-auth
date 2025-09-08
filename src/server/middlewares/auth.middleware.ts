@@ -1,4 +1,3 @@
-import { ORPCError } from "@orpc/client";
 import { os } from "@orpc/server";
 
 import { ORPCContext } from "@/server/types";
@@ -19,14 +18,16 @@ export const optionalAuth = os
   });
 
 export const requireAuth = (role?: "admin" | "user") =>
-  os.$context<ORPCContext>().middleware(async ({ context, next }) => {
-    if (!context.user) {
-      throw new ORPCError("UNAUTHORIZED", { message: "Session Expired!" });
-    }
-    if (role && context.user.role !== role) {
-      throw new ORPCError("FORBIDDEN", {
-        message: "You don't have access to this resource",
-      });
-    }
-    return next({ context });
-  });
+  os
+    .$context<ORPCContext>()
+    .errors({
+      UNAUTHORIZED: { message: "Session expired!" },
+      FORBIDDEN: { message: "You don't have access to this resource" },
+    })
+    .middleware(async ({ context, errors, next }) => {
+      if (!context.user) throw errors.UNAUTHORIZED();
+      if (role && context.user.role !== role) {
+        throw errors.FORBIDDEN();
+      }
+      return next({ context });
+    });
