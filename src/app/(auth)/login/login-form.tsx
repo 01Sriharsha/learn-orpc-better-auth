@@ -12,7 +12,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-import { orpcQC } from "@/lib/orpc/orpc.client";
+import { orpcQC } from "@/lib/orpc";
 import {
   LoginSchema,
   OTPCodeSchema,

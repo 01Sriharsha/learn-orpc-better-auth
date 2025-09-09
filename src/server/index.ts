@@ -1,6 +1,7 @@
 import { onError, ORPCError, os, ValidationError } from "@orpc/server";
 import * as z from "zod";
 
+import { injectNextHeaders } from "@/server/middlewares";
 import { optionalAuth } from "@/server/middlewares/auth.middleware";
 import { ORPCContext } from "@/server/types";
 
@@ -10,6 +11,7 @@ export const base = context
   .errors({
     INTERNAL_SERVER_ERROR: { message: "Something went wrong" },
   })
+  .use(injectNextHeaders)
   .use(optionalAuth)
   .use(onError((e) => errorHandler(e)));
 

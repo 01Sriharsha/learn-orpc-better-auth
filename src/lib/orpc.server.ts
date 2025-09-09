@@ -4,7 +4,7 @@ import { createRouterClient } from "@orpc/server";
 
 import { router } from "@/server/router";
 
-export const orpcServerClient = createRouterClient(router, {
+globalThis.$client = createRouterClient(router, {
   /**
    * Provide initial context if needed.
    *
@@ -12,10 +12,5 @@ export const orpcServerClient = createRouterClient(router, {
    * only include context that's safe to reuse globally.
    * For per-request context, use middleware context or pass a function as the initial context.
    */
-  context: async () => ({
-    reqHeaders: await import("next/headers").then((mod) => mod.headers()),
-  }),
+  context: {},
 });
-
-if (process.env.NODE_ENV === "development")
-  globalThis.$client = orpcServerClient;

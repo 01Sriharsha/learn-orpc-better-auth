@@ -29,5 +29,5 @@ export const displayUser = (user: Partial<User>) => ({
 export const paginationResponse = <T extends Array<any>>(
   options: Omit<Pagination<T>, "totalPages">
 ): Pagination<T> => {
-  return { ...options, totalPages: Math.ceil(options.total / options.limit) };
+  return { ...options, totalPages: Math.ceil(options.total / options.pageSize) };
 };

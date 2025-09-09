@@ -15,6 +15,7 @@ import {
 import { base } from "@/server";
 import { requireAuth } from "@/server/middlewares/auth.middleware";
 import { getSession } from "@/server/utils";
+import { injectNextHeaders } from "../middlewares";
 
 const authRouter = base
   .route({ path: "/auth", tags: ["Authentication"] })

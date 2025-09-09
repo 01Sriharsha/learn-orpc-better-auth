@@ -8,7 +8,7 @@ export const CategorySchema = z.object({
   description: z.string().nullable().optional(),
   imageUrl: z.url().nullable().optional(),
   priority: z.coerce.number().default(-1),
-  level: z.coerce.number().default(0),
+  level: z.coerce.number(),
   parentId: z.uuid().nullable().optional(),
   sectionId: z.uuid().nullable().optional(),
   createdAt: z.coerce.date().default(() => new Date()),

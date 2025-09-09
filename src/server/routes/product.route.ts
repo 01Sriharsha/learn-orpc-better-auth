@@ -68,14 +68,14 @@ export const getProducts = productRouter
       sort,
       sortBy = "priority",
       page = 1,
-      limit = 10,
+      pageSize = 10,
       keyword,
       categoryId,
       sectionId,
       vendorId,
     } = input;
 
-    if (limit > 100) {
+    if (pageSize > 100) {
       throw errors.BAD_REQUEST({
         message: "Only 100 products can be fetched at a time",
       });
@@ -96,8 +96,8 @@ export const getProducts = productRouter
     const [products, total] = await Promise.all([
       db.product.findMany({
         where,
-        take: limit,
-        skip: (page - 1) * limit,
+        take: pageSize,
+        skip: (page - 1) * pageSize,
         orderBy: { [sortBy]: sort },
         ...DefaultProductArgs,
       }),
@@ -108,7 +108,7 @@ export const getProducts = productRouter
       message: "Products fetched successfully",
       data: paginationResponse({
         page,
-        limit,
+        pageSize,
         total,
         content: products,
       }),

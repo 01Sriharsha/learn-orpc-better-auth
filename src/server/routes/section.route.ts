@@ -4,7 +4,7 @@ import { ORPCError } from "@orpc/client";
 import z from "zod";
 
 import { db } from "@/lib/db";
-import { IdentifiersSchema, ResponseSchema } from "@/schemas";
+import { IdentifiersSchema, ResponseSchema, transformQuery } from "@/schemas";
 import { SectionQueryParamsSchema, SectionSchema } from "@/schemas/section";
 
 import { base } from "@/server";
@@ -44,7 +44,7 @@ export const getSections = sectionRouter
       sort,
       sortBy = "priority",
       page = 1,
-      limit = 10,
+      pageSize = 10,
       keyword,
       type,
     } = input;
@@ -62,15 +62,15 @@ export const getSections = sectionRouter
     const [sections, total] = await Promise.all([
       db.section.findMany({
         where,
-        take: limit,
-        skip: (page - 1) * limit,
+        take: pageSize,
+        skip: (page - 1) * pageSize,
         orderBy: { [sortBy]: sort },
       }),
       db.section.count({ where }),
     ]);
     return {
       message: "Sections fetched successfully",
-      data: paginationResponse({ page, limit, total, content: sections }),
+      data: paginationResponse({ page, pageSize, total, content: sections }),
     };
   });
 

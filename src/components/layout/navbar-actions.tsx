@@ -6,7 +6,7 @@ import { Bell, Menu } from "lucide-react";
 import ProfileDropdown from "@/components/layout/profile-dropdown"; // Adjust import path as needed
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { orpcQC } from "@/lib/orpc/orpc.client";
+import { orpcQC } from "@/lib/orpc";
 import { useQuery } from "@tanstack/react-query";
 
 export default function NavbarActions() {

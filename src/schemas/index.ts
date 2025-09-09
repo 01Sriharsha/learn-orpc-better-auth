@@ -1,11 +1,12 @@
 import z from "zod";
 
 export const transformQuery = <T extends QueryParamsSchema>(query: T) => {
-  const { page, limit, ...rest } = query;
+  const { page, pageSize, sortBy, ...rest } = query;
   return {
     ...rest,
-    page: Number(page),
-    limit: Number(limit),
+    page: page ? Number(page) : 1,
+    pageSize: Number(pageSize),
+    sortBy: sortBy ? String(sortBy) : "createdAt",
   };
 };
 
@@ -18,7 +19,7 @@ export const PaginationResponseSchema = ResponseSchema.extend({
   data: z.object({
     total: z.coerce.number().default(0),
     page: z.coerce.number().default(1),
-    limit: z.coerce.number().default(10),
+    pageSize: z.coerce.number().default(10),
     content: z.array(z.any()).default([]),
     totalPages: z.coerce.number().default(0),
   }),
@@ -32,7 +33,7 @@ export const IdentifiersSchema = z.object({
 export const QueryParamsSchema = z
   .object({
     page: z.coerce.number().default(1),
-    limit: z.coerce.number().default(10),
+    pageSize: z.coerce.number().default(10),
     sort: z.enum(["asc", "desc"]).default("asc"),
     sortBy: z.enum(["createdAt", "priority"]).default("createdAt"),
     keyword: z.string().default(""),

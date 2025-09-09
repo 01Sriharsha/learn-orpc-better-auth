@@ -55,7 +55,7 @@ export const getCategories = categoryRouter
       sort,
       sortBy = "priority",
       page = 1,
-      limit = 10,
+      pageSize = 10,
       keyword,
       level,
       parentId,
@@ -77,8 +77,8 @@ export const getCategories = categoryRouter
     const [categories, total] = await Promise.all([
       db.category.findMany({
         where,
-        take: limit,
-        skip: (page - 1) * limit,
+        take: pageSize,
+        skip: (page - 1) * pageSize,
         orderBy: { [sortBy]: sort },
         ...DefaultCategoryArgs,
       }),
@@ -95,7 +95,7 @@ export const getCategories = categoryRouter
       message: "Categories fetched successfully",
       data: paginationResponse({
         page,
-        limit,
+        pageSize,
         total,
         content: formattedCategories,
       }),
