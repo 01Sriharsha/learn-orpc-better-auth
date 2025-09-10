@@ -52,7 +52,7 @@ const categoryFormSchema = z.object({
   description: z.string().optional(),
   priority: z.number().default(0),
   parentId: z.string().optional(),
-  sectionId: z.string().optional(),
+  sectionId: z.string().min(1, "Section is required"),
 });
 
 export default function CategoryDialogForm() {
@@ -74,7 +74,7 @@ export default function CategoryDialogForm() {
       description: "",
       priority: 0,
       parentId: undefined,
-      sectionId: undefined,
+      sectionId: "",
     },
   });
 
@@ -94,7 +94,7 @@ export default function CategoryDialogForm() {
         description: "",
         priority: 0,
         parentId: undefined,
-        sectionId: undefined,
+        sectionId: "",
       });
     }
   }, [isDialogOpen, selectedCategory, dialogMode, form]);
@@ -171,7 +171,7 @@ export default function CategoryDialogForm() {
 
   return (
     <Dialog open={isDialogOpen} onOpenChange={(open) => !open && closeDialog()}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[90vh] h-full overflow-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold">
             {dialogMode === "create" ? "Create Category" : "Update Category"}
@@ -233,12 +233,12 @@ export default function CategoryDialogForm() {
                     name="sectionId"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Section (Optional)</FormLabel>
+                        <FormLabel>Section *</FormLabel>
                         <FormControl>
                           <Select
                             value={field.value || ""}
                             onValueChange={(value) =>
-                              field.onChange(value || undefined)
+                              field.onChange(value || "")
                             }
                             disabled={isLoading}
                           >
@@ -246,12 +246,8 @@ export default function CategoryDialogForm() {
                               <SelectValue placeholder="Select a section" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="">No Section</SelectItem>
                               {sections?.map((section: any) => (
-                                <SelectItem
-                                  key={section.id}
-                                  value={section.id}
-                                >
+                                <SelectItem key={section.id} value={section.id}>
                                   {section.name}
                                 </SelectItem>
                               ))}
@@ -260,7 +256,7 @@ export default function CategoryDialogForm() {
                         </FormControl>
                         <FormMessage />
                         <div className="text-xs text-slate-600">
-                          Categories can optionally belong to a section
+                          Every category must belong to a section
                         </div>
                       </FormItem>
                     )}
@@ -279,6 +275,8 @@ export default function CategoryDialogForm() {
                             placeholder="Select parent category"
                             disabled={isLoading}
                             className="w-full"
+                            showSubcategories={false}
+                            sectionId={form.watch("sectionId")}
                           />
                         </FormControl>
                         <FormMessage />

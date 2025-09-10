@@ -5,7 +5,11 @@ import z from "zod";
 
 import { db } from "@/lib/db";
 import { IdentifiersSchema } from "@/schemas";
-import { CategoryQueryParamsSchema, CategorySchema } from "@/schemas/category";
+import {
+  CategoryQueryParamsSchema,
+  CategorySchema,
+  CategoryWithRelationsSchema,
+} from "@/schemas/category";
 
 import { base } from "@/server";
 import { requireAuth } from "@/server/middlewares/auth.middleware";
@@ -91,13 +95,16 @@ export const getCategories = categoryRouter
       childrenLength: c._count.children as number,
     }));
 
+    const parsed =
+      CategoryWithRelationsSchema.array().parse(formattedCategories);
+
     return {
       message: "Categories fetched successfully",
       data: paginationResponse({
         page,
         pageSize,
         total,
-        content: formattedCategories,
+        content: parsed,
       }),
     };
   });

@@ -1,7 +1,8 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { Check } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -18,6 +19,7 @@ interface CategorySelectProps {
   placeholder?: string;
   disabled?: boolean;
   showSubcategories?: boolean; // If true, enables two-level selection
+  sectionId?: string; // Filter categories by section
   className?: string;
 }
 
@@ -27,78 +29,162 @@ export default function CategorySelect({
   placeholder = "Select category",
   disabled = false,
   showSubcategories = false,
+  sectionId,
   className = "",
 }: CategorySelectProps) {
   const [selectedRoot, setSelectedRoot] = useState<string | undefined>();
   const [selectedSub, setSelectedSub] = useState<string | undefined>();
+  // Track which level was most recently selected to control where the check icon appears
+  const [lastSelectedLevel, setLastSelectedLevel] = useState<
+    "root" | "sub" | null
+  >(null);
 
   // Fetch root categories (level 0)
-  const { data: rootCategories } = useQuery(
+  const { data: rootCategories, isLoading: rootLoading } = useQuery(
     orpcQC.category.get.queryOptions({
-      input: { level: 0, pageSize: 100 },
-      enabled: true,
+      input: { level: 0, pageSize: 100, sectionId },
+      enabled: !!sectionId,
     })
   );
 
   // Fetch subcategories when root is selected
-  const { data: subCategories } = useQuery(
+  const { data: subCategories, isLoading: subLoading } = useQuery(
     orpcQC.category.get.queryOptions({
-      input: { parentId: selectedRoot, level: 1, pageSize: 100 },
-      enabled: !!selectedRoot && showSubcategories,
+      input: { parentId: selectedRoot, level: 1, pageSize: 100, sectionId },
+      enabled: !!selectedRoot && showSubcategories && !!sectionId,
+    })
+  );
+
+  // Fallback: fetch all level 1 categories in the section to resolve pre-filled subcategory values
+  const { data: allSectionSubcategories } = useQuery(
+    orpcQC.category.get.queryOptions({
+      input: { level: 1, pageSize: 100, sectionId },
+      enabled: !!sectionId && !!value && showSubcategories && !selectedRoot,
     })
   );
 
   // Auto-population logic
   useEffect(() => {
-    if (value && rootCategories?.data?.content) {
-      const findCategoryById = (
-        id: string
-      ): CategoryWithRelationsSchema | undefined => {
-        // Search in root categories first
-        let category = rootCategories.data?.content.find(
-          (cat) => cat.id === id
-        );
-        if (category) return category;
+    if (!value) {
+      // When waiting for a subcategory selection, keep the current root selection.
+      // We'll reset on section change explicitly.
+      return;
+    }
 
-        // If not found and we have subcategories, search there too
-        if (subCategories?.data?.content) {
-          category = subCategories.data.content.find((cat) => cat.id === id);
+    if (rootCategories?.data?.content) {
+      const rootCategoriesList = rootCategories.data.content;
+
+      // Check if the value is a root category
+      const rootCategory = rootCategoriesList.find((cat) => cat.id === value);
+      if (rootCategory) {
+        if (selectedRoot !== rootCategory.id) {
+          setSelectedRoot(rootCategory.id);
         }
-        return category;
-      };
-
-      const category = findCategoryById(value);
-      if (category) {
-        if (category.level === 0) {
-          setSelectedRoot(category.id);
+        if (selectedSub !== undefined) {
           setSelectedSub(undefined);
-        } else {
-          // For level 1 categories, find their parent
-          setSelectedRoot(category.parent?.id);
-          setSelectedSub(category.id);
+        }
+        if (lastSelectedLevel !== "root") setLastSelectedLevel("root");
+        return;
+      }
+
+      // If not a root category and we have subcategories for current root, check there
+      if (subCategories?.data?.content) {
+        const subCategoriesList = subCategories.data.content;
+        const subCategory = subCategoriesList.find((cat) => cat.id === value);
+        if (subCategory) {
+          if (selectedRoot !== subCategory.parent?.id) {
+            setSelectedRoot(subCategory.parent?.id);
+          }
+          if (selectedSub !== subCategory.id) {
+            setSelectedSub(subCategory.id);
+          }
+          if (lastSelectedLevel !== "sub") setLastSelectedLevel("sub");
+          return;
+        }
+      }
+
+      // Fallback: search across all section subcategories
+      if (allSectionSubcategories?.data?.content) {
+        const allSubs = allSectionSubcategories.data.content;
+        const subCategory = allSubs.find((cat) => cat.id === value);
+        if (subCategory) {
+          if (selectedRoot !== subCategory.parent?.id) {
+            setSelectedRoot(subCategory.parent?.id);
+          }
+          if (selectedSub !== subCategory.id) {
+            setSelectedSub(subCategory.id);
+          }
+          return;
         }
       }
     }
-  }, [value, rootCategories?.data?.content, subCategories?.data?.content]);
+  }, [
+    value,
+    rootCategories?.data?.content,
+    subCategories?.data?.content,
+    allSectionSubcategories?.data?.content,
+    selectedRoot,
+    selectedSub,
+    lastSelectedLevel,
+  ]);
 
-  const handleRootChange = (rootId: string) => {
-    setSelectedRoot(rootId);
+  // Reset states when sectionId changes
+  useEffect(() => {
+    setSelectedRoot(undefined);
     setSelectedSub(undefined);
+    onValueChange(undefined);
+  }, [sectionId]); // Removed onValueChange from dependencies
 
-    if (!showSubcategories) {
-      onValueChange(rootId);
-    } else {
-      onValueChange(undefined); // Wait for subcategory selection
-    }
-  };
+  const handleRootChange = useCallback(
+    (rootId: string) => {
+      setSelectedRoot(rootId);
+      setSelectedSub(undefined);
 
-  const handleSubChange = (subId: string) => {
-    setSelectedSub(subId);
-    onValueChange(subId);
-  };
+      if (!showSubcategories) {
+        // If no subcategories, directly select the root category
+        onValueChange(rootId);
+        setLastSelectedLevel("root");
+      } else {
+        // Check if this root category has children
+        const rootCategory = rootCategories?.data?.content?.find(
+          (cat) => cat.id === rootId
+        );
+        const hasChildren = (rootCategory?.childrenLength ?? 0) > 0;
+
+        if (hasChildren) {
+          // If has children, wait for subcategory selection
+          onValueChange(undefined);
+          setLastSelectedLevel("root");
+        } else {
+          // If no children, select the root category directly
+          onValueChange(rootId);
+          setLastSelectedLevel("root");
+        }
+      }
+    },
+    [showSubcategories, onValueChange, rootCategories?.data?.content]
+  );
+
+  const handleSubChange = useCallback(
+    (subId: string) => {
+      setSelectedSub(subId);
+      onValueChange(subId);
+      setLastSelectedLevel("sub");
+    },
+    [onValueChange]
+  );
 
   const rootCategoriesList = rootCategories?.data?.content || [];
   const subCategoriesList = subCategories?.data?.content || [];
+
+  // Check if selected root category has children
+  const selectedRootCategory = rootCategoriesList.find(
+    (cat) => cat.id === selectedRoot
+  );
+  const shouldShowSubcategories =
+    showSubcategories &&
+    !!selectedRoot &&
+    (selectedRootCategory?.childrenLength ?? 0) > 0;
 
   if (!showSubcategories) {
     // Single level selection
@@ -109,14 +195,26 @@ export default function CategorySelect({
         disabled={disabled}
       >
         <SelectTrigger className={className}>
-          <SelectValue placeholder={placeholder} />
+          <SelectValue placeholder={rootLoading ? "Loading..." : placeholder} />
         </SelectTrigger>
         <SelectContent>
-          {rootCategoriesList.map((category) => (
-            <SelectItem key={category.id} value={category.id}>
-              {category.name}
+          {rootCategoriesList.length === 0 ? (
+            <SelectItem value="0" disabled>
+              No categories available
             </SelectItem>
-          ))}
+          ) : (
+            rootCategoriesList.map((category) => (
+              <SelectItem key={category.id} value={category.id}>
+                <div className="flex items-center justify-between w-full">
+                  <span>{category.name}</span>
+                  {lastSelectedLevel === "root" &&
+                    selectedRoot === category.id && (
+                      <Check className="h-4 w-4 text-green-600" />
+                    )}
+                </div>
+              </SelectItem>
+            ))
+          )}
         </SelectContent>
       </Select>
     );
@@ -131,32 +229,60 @@ export default function CategorySelect({
         disabled={disabled}
       >
         <SelectTrigger className={className}>
-          <SelectValue placeholder="Select root category" />
+          <SelectValue
+            placeholder={rootLoading ? "Loading..." : "Select root category"}
+          />
         </SelectTrigger>
         <SelectContent>
-          {rootCategoriesList.map((category) => (
-            <SelectItem key={category.id} value={category.id}>
-              {category.name}
+          {rootCategoriesList.length === 0 ? (
+            <SelectItem value="0" disabled>
+              No categories available
             </SelectItem>
-          ))}
+          ) : (
+            rootCategoriesList.map((category) => (
+              <SelectItem key={category.id} value={category.id}>
+                <div className="flex items-center justify-between w-full">
+                  <span>{category.name}</span>
+                  {lastSelectedLevel === "root" &&
+                    selectedRoot === category.id && (
+                      <Check className="h-4 w-4 text-green-600" />
+                    )}
+                </div>
+              </SelectItem>
+            ))
+          )}
         </SelectContent>
       </Select>
 
-      {selectedRoot && subCategoriesList.length > 0 && (
+      {shouldShowSubcategories && (
         <Select
           value={selectedSub}
           onValueChange={handleSubChange}
           disabled={disabled}
         >
           <SelectTrigger className={className}>
-            <SelectValue placeholder="Select subcategory" />
+            <SelectValue
+              placeholder={subLoading ? "Loading..." : "Select subcategory"}
+            />
           </SelectTrigger>
           <SelectContent>
-            {subCategoriesList.map((category) => (
-              <SelectItem key={category.id} value={category.id}>
-                {category.name}
+            {subCategoriesList.length === 0 ? (
+              <SelectItem value="0" disabled>
+                No subcategories available
               </SelectItem>
-            ))}
+            ) : (
+              subCategoriesList.map((category) => (
+                <SelectItem key={category.id} value={category.id}>
+                  <div className="flex items-center justify-between w-full">
+                    <span>{category.name}</span>
+                    {lastSelectedLevel === "sub" &&
+                      selectedSub === category.id && (
+                        <Check className="h-4 w-4 text-green-600" />
+                      )}
+                  </div>
+                </SelectItem>
+              ))
+            )}
           </SelectContent>
         </Select>
       )}

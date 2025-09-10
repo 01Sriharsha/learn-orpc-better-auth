@@ -120,6 +120,19 @@ export const ProductSchema = BaseProductSchema.extend({
   softwareDetails: z.lazy(() => SoftwareDetailsSchema).optional(),
 });
 
+export const CreateProductSchema = ProductSchema.omit({ id: true, createdAt: true, updatedAt: true }).extend({
+  name: z.string().min(1, "Product name is required"),
+  slug: z.string().min(1, "Product slug is required"),
+  sectionId: z.string().min(1, "Section is required"),
+  categoryId: z.string().min(1, "Category is required"),
+});
+export const UpdateProductSchema = ProductSchema.omit({ createdAt: true, updatedAt: true, id: true }).extend({
+  name: z.string().min(1, "Product name is required"),
+  slug: z.string().min(1, "Product slug is required"),
+  sectionId: z.string().min(1, "Section is required"),
+  categoryId: z.string().min(1, "Category is required"),
+});
+
 export const ProductQueryParamsSchema = QueryParamsSchema.extend(
   BaseProductSchema.pick({
     categoryId: true,
@@ -155,6 +168,8 @@ export type DatacenterCloudDetailsSchema = z.infer<
 export type AIProductDetailsSchema = z.infer<typeof AIProductDetailsSchema>;
 export type BaseProductSchema = z.infer<typeof BaseProductSchema>;
 export type ProductSchema = z.infer<typeof ProductSchema>;
+export type CreateProductSchema = z.infer<typeof CreateProductSchema>;
+export type UpdateProductSchema = z.infer<typeof UpdateProductSchema>;
 export type ProductQueryParamsSchema = z.infer<typeof ProductQueryParamsSchema>;
 export type ProductResponseSchema = z.infer<typeof ProductResponseSchema>;
 export type LabelLinkPrioritySchema = z.infer<typeof LabelLinkPrioritySchema>;
